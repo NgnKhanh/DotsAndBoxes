@@ -1,15 +1,48 @@
 #include<iostream>
 #include<stdlib.h>
 #include<windows.h>
+#include<cstdlib>
+#include<ctime>
 using namespace std;
 
 const int GRID_SIZE = 2;
-
+int totalMove = (GRID_SIZE * GRID_SIZE + GRID_SIZE) * 2;
 char grid[GRID_SIZE * 2 + 1][GRID_SIZE * 2 + 1];
+
 
 void getPlayerMove(int& row, int& col) {
     cout << "Enter the row - column numbers: ";
     cin >> row >> col;
+}
+
+bool makeAIMove(int& row, int& col, char grid[][GRID_SIZE * 2 + 1]) {
+    int availableMoves[totalMove][2];
+    int numMoves = 0;
+
+    for (int i = 0; i < GRID_SIZE; ++i) {
+        for (int j = 0; j < GRID_SIZE; ++j) {
+            if (grid[i][j] == ' ' && ((j % 2 == 0 && j % 2 == 1) || (i % 2 == 1 && j % 2 == 0))) {
+                availableMoves[numMoves][0] = i;
+                availableMoves[numMoves][1] = j;
+                ++numMoves;
+            }
+        }
+    }
+
+    if (numMoves > 0) {
+        int randomMove = rand() % numMoves;
+        row = availableMoves[randomMove][0];
+        col = availableMoves[randomMove][1];
+        return true;
+    }
+
+    return false;
+}
+
+bool isValidMove(int& row, int& col) {
+	if(row % 2 == 0 && col % 2 == 1) return true;
+    else if(row % 2 == 1 && col % 2 == 0) return true;
+    return false;
 }
 
 void drawGrid(char grid[][GRID_SIZE * 2 + 1]) {
@@ -25,7 +58,6 @@ void drawGrid(char grid[][GRID_SIZE * 2 + 1]) {
 
 void updateGrid(char grid[][GRID_SIZE * 2 + 1], int row, int col, char symbol) {
         grid[row][col] = symbol;
-    
 }
 
 
@@ -134,12 +166,18 @@ void declareWinner(int player1Score, int player2Score) {
 
 int main() {
 	HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+	srand((int)time(0));
 	int P1Score = 0;
 	int P2Score = 0;
     bool isPlayer1Turn = true;
-    int move = (GRID_SIZE * GRID_SIZE + GRID_SIZE) * 2;
+    
+    int option;
+    cout << "Welcome to Dots and Boxes game." << endl
+    	 << "Please choose game mode: 1 player or 2 players? (1/2)" << endl;
+    cin >> option;
+    
 
-    while (move > 0) {
+    while (totalMove > 0) {
     int player1Score = 0;
     int player2Score = 0;
   	for(int i = 0; i < 25; i++) cout << endl;  
@@ -154,7 +192,11 @@ int main() {
         drawGrid(grid);
 
         int row, col;
-        getPlayerMove(row, col);
+        if(isPlayer1Turn) getPlayerMove(row, col);
+        else{
+        	if(option == 2) getPlayerMove(row, col);
+        	else makeAIMove(row, col, grid);
+		}
         
 		char symbol;
         if(row % 2 == 0 && col % 2 == 1) symbol = '-';
@@ -166,7 +208,7 @@ int main() {
            	assignBoxToPlayer(grid, row, col, isPlayer1Turn);
        	}else isPlayer1Turn = !isPlayer1Turn;
        	
-       	move--;
+       	totalMove--;
     }
     
     for (int i = 0; i < GRID_SIZE * 2 + 1; i++) {

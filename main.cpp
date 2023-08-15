@@ -38,36 +38,87 @@ bool isBoxCompleted(const char grid[][GRID_SIZE * 2 + 1], int &row, int &col) {
     }
 
     else if (grid[row][col] == '-' &&
-        grid[row - 1][col - 1] == '|' &&
-        grid[row - 1][col + 1] == '|' &&
+    	grid[row - 1][col - 1] == '|' &&
+    	grid[row - 1][col + 1] == '|' &&
 		grid[row - 2][col] == '-') {
-        return true;
-    }
+    	return true;
+	}
 
-    else if (grid[row][col] == '|' &&
-        grid[row][col + 2] == '|' &&
-        grid[row - 1][col + 1] == '-' &&
+	else if (grid[row][col] == '|' &&
+    	grid[row][col + 2] == '|' &&
+    	grid[row - 1][col + 1] == '-' &&
 		grid[row + 1][col + 1] == '-') {
-        return true;
-    }
+    	return true;
+	}
 
-    else if (grid[row][col] == '-' &&
-        grid[row + 1][col - 1] == '|' &&
-        grid[row + 1][col + 1] == '|' &&
+	else if (grid[row][col] == '-' &&
+    	grid[row + 1][col - 1] == '|' &&
+    	grid[row + 1][col + 1] == '|' &&
 		grid[row + 2][col] == '-') {
-        return true;
-    }
-
+    	return true;
+	}
     return false;
 }
 
-void assignBoxToPlayer(int& player1Score, int& player2Score, bool isPlayer1Turn) {
-    if (isPlayer1Turn) player1Score++;
-    else player2Score++;
-}
+void assignBoxToPlayer(char grid[][GRID_SIZE * 2 + 1], int &row, int &col, bool isPlayer1Turn) {
+    if (isPlayer1Turn) {
+    	if (grid[row][col] == '-' &&
+        grid[row + 1][col - 1] == '|' &&
+        grid[row + 1][col + 1] == '|' &&
+		grid[row + 2][col] == '-') {
+        grid[row + 1][col] = 'X';
+    	}
 
-bool isGameOver(int player1Score, int player2Score) {
-    return (player1Score + player2Score) == (GRID_SIZE * GRID_SIZE);
+    	if (grid[row][col] == '-' &&
+   		grid[row - 1][col - 1] == '|' &&
+    	grid[row - 1][col + 1] == '|' &&
+		grid[row - 2][col] == '-') {
+    	grid[row - 1][col] = 'X';
+		}
+		
+		if (grid[row][col] == '|' &&
+    	grid[row][col + 2] == '|' &&
+    	grid[row - 1][col + 1] == '-' &&
+		grid[row + 1][col + 1] == '-') {
+    	grid[row][col + 1] = 'X';
+		}
+
+		if (grid[row][col] == '-' &&
+    	grid[row + 1][col - 1] == '|' &&
+    	grid[row + 1][col + 1] == '|' &&
+		grid[row + 2][col] == '-') {
+    	grid[row][col - 1] = 'X';
+		}
+
+    }else{
+    	if (grid[row][col] == '-' &&
+    	grid[row + 1][col - 1] == '|' &&
+    	grid[row + 1][col + 1] == '|' &&
+		grid[row + 2][col] == '-') {
+    	grid[row + 1][col] = 'O';
+		}
+
+		if (grid[row][col] == '-' &&
+    	grid[row - 1][col - 1] == '|' &&
+    	grid[row - 1][col + 1] == '|' &&
+		grid[row - 2][col] == '-') {
+    	grid[row - 1][col] = 'O';
+		}
+
+		if (grid[row][col] == '|' &&
+    	grid[row][col + 2] == '|' &&
+    	grid[row - 1][col + 1] == '-' &&
+		grid[row + 1][col + 1] == '-') {
+    	grid[row][col + 1] = 'O';
+		}
+
+		if (grid[row][col] == '-' &&
+    	grid[row + 1][col - 1] == '|' &&
+    	grid[row + 1][col + 1] == '|' &&
+		grid[row + 2][col] == '-') {
+    	grid[row][col - 1] = 'O';
+		}
+	}
 }
 
 void declareWinner(int player1Score, int player2Score) {
@@ -83,15 +134,15 @@ void declareWinner(int player1Score, int player2Score) {
 
 int main() {
 	HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+	int P1Score = 0;
+	int P2Score = 0;
+    bool isPlayer1Turn = true;
+    int move = (GRID_SIZE * GRID_SIZE + GRID_SIZE) * 2;
+
+    while (move > 0) {
     int player1Score = 0;
     int player2Score = 0;
-    bool isPlayer1Turn = true;
-
-    while (!isGameOver(player1Score, player2Score)) {
-  	    
-    cout << "P1 Score: " << player1Score << endl
-	     << "P2 Score: " << player2Score << endl;  
-	     
+  	for(int i = 0; i < 25; i++) cout << endl;  
 	if(isPlayer1Turn == true) {
 		SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_INTENSITY);
 	 	cout << "It's P1's turn." << endl;
@@ -112,12 +163,22 @@ int main() {
        	updateGrid(grid, row, col, symbol);
 
        	if (isBoxCompleted(grid, row, col) == true) {
-           	assignBoxToPlayer(player1Score, player2Score, isPlayer1Turn);
+           	assignBoxToPlayer(grid, row, col, isPlayer1Turn);
        	}else isPlayer1Turn = !isPlayer1Turn;
+       	
+       	move--;
+    }
+    
+    for (int i = 0; i < GRID_SIZE * 2 + 1; i++) {
+        for (int j = 0; j < GRID_SIZE * 2 + 1; j++) {
+        	if(grid[i][j] == 'X') P1Score++;
+            else if(grid[i][j] == 'O') P1Score++;
+        }
+        cout << endl;
     }
 
-    drawGrid(grid);
-    declareWinner(player1Score, player2Score);
+	drawGrid(grid);
+    declareWinner(P1Score, P2Score);
 
     return 0;
 }
